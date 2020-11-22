@@ -198,6 +198,9 @@ type EventGetParams struct {
 	// SelectAcknowledgements causes Acknowledgments for each Event to be
 	// attached in the search results in reverse chronological order.
 	SelectAcknowledgements SelectQuery `json:"select_acknowledges,omitempty"`
+
+	//severities
+	Severities []int `json:"severities,omitempty"`
 }
 
 // GetEvents queries the Zabbix API for Events matching the given search
