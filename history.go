@@ -50,6 +50,9 @@ type HistoryGetParams struct {
 	// of the given Item ID's.
 	ItemIDs []string `json:"itemids,omitempty"`
 
+	// HostIds filters search results to histories belong to the hosts
+	HostIds []string `json:"hostids,omitempty"`
+
 	// Return only values that have been received after or at the given time.
 	TimeFrom float64 `json:"time_from,omitempty"`
 
