@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 // ErrNotFound describes an empty result set for an API call.
@@ -36,13 +37,43 @@ type Session struct {
 //
 // The authentication token returned by the Zabbix API server is cached to
 // authenticate all subsequent requests in this Session.
-func NewSession(url string, username string, password string) (session *Session, err error) {
+func NewSession(url string, username string, password string, tokenApi string) (session *Session, err error) {
 	// create session
 	session = &Session{URL: url}
+	if tokenApi != ""{
+		err = session.checkToken(tokenApi)
+		fmt.Println(err)
+		return
+	}
 	err = session.login(username, password)
 	return
 }
+func (c *Session) checkToken(tokenApi string) error{
+	// get Zabbix API version
+	_, err := c.GetVersion()
+	if err != nil {
+		return fmt.Errorf("Failed to retrieve Zabbix API version: %v", err)
+	}
 
+	c.Token = tokenApi
+
+	//make a any request to check token is valid
+	params := HostGetParams{}
+	params.OutputFields = "extend"
+	params.TextSearch = map[string]string{"name": "Zabbix Server"}
+	params.EnableTextSearchWildcards = true
+	res, err := c.Do(NewRequest("host.get", params))
+	if err != nil {
+		return fmt.Errorf("Error logging in to Zabbix API: %v", err)
+	}
+	if res.Error.Code  != 0 {
+		if strings.Contains("sessionid", res.Error.Message){
+			return fmt.Errorf("Error logging in to Zabbix API: %v", err)
+		}
+	}
+	return nil
+
+}
 func (c *Session) login(username, password string) error {
 	// get Zabbix API version
 	_, err := c.GetVersion()
